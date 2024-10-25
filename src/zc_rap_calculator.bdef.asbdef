@@ -1,0 +1,18 @@
+projection implementation in class ZBP_C_RAP_CALCULATOR unique;
+strict ( 2 );
+use side effects;
+use draft;
+define behavior for ZC_RAP_CALCULATOR alias ZcRapCalculator
+use etag
+
+{
+  use create;
+  use update;
+  use delete;
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+}

@@ -1,0 +1,59 @@
+managed implementation in class ZBP_R_RAP_CALCULATOR unique;
+strict ( 2 );
+with draft;
+define behavior for ZR_RAP_CALCULATOR alias Calculator
+persistent table zrap_calculator
+draft table zrap_calculato_d
+etag master LocalLastChangedAt
+lock master total etag LastChangedAt
+authorization master ( global )
+
+{
+  field ( readonly )
+  CalcUuid,
+  CreatedAt,
+  CreatedBy,
+  LastChangedBy,
+  LastChangedAt,
+  LocalLastChangedAt;
+
+  field ( numbering : managed )
+  CalcUuid;
+
+  field ( readonly ) CalcResult;
+
+  create;
+  update;
+  delete;
+
+  // side effects
+  side effects
+  {
+    field OperandA affects field CalcResult;
+    field OperandB affects field CalcResult;
+    field Operator affects field CalcResult;
+  }
+
+  // internal action recalcResult;
+  determination CalculateCalcResult on modify { field OperandA, OperandB, Operator; }
+
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Edit;
+  draft action Resume;
+  draft determine action Prepare;
+
+  mapping for zrap_calculator
+    {
+          CalcUuid           = calc_uuid;
+      OperandA           = operand_a;
+      OperandB           = operand_b;
+      Operator           = operator;
+      CalcResult         = calc_result;
+      CreatedAt          = created_at;
+      CreatedBy          = created_by;
+      LastChangedBy      = last_changed_by;
+      LastChangedAt      = last_changed_at;
+      LocalLastChangedAt = local_last_changed_at;
+    }
+}

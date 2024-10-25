@@ -1,0 +1,4 @@
+@EndUserText.label: 'Service Definition'
+define service ZRAP_DEV_U_CONNECTION {
+  expose ZRAP_DEV_R_CONNECTION;
+}

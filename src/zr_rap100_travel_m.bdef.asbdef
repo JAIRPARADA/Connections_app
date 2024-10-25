@@ -1,0 +1,129 @@
+managed implementation in class ZBP_R_RAP100_TRAVEL_M unique;
+strict ( 2 );
+with draft;
+define behavior for ZR_RAP100_TRAVEL_M alias Travel
+persistent table zrap100_travel_m
+draft table zrap100_travel_d
+etag master LocalLastChangedAt
+lock master total etag LastChangedAt
+authorization master ( global )
+early numbering
+{
+  field ( readonly )
+  TravelId;
+
+  field ( readonly )
+  CreatedAt,
+  CreatedBy,
+  LastChangedAt,
+  LocalLastChangedAt,
+  LocalLastChangedBy;
+
+  field ( mandatory )
+  CustomerId,
+  BeginDate,
+  EndDate;
+
+  field ( readonly )
+  TotalPrice;
+
+  create;
+  update ( features : instance );
+  delete ( features : instance );
+
+  //side effects
+  side effects
+  {
+    field BookingFee affects field TotalPrice;
+    field CurrencyCode affects field TotalPrice;
+  }
+
+  determination setStatusToOpen on modify { create; }
+
+  validation validateCustomer on save { create; field CustomerId; }
+  validation validateDates on save { create; field BeginDate, EndDate; }
+
+  draft action ( features : instance ) Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+
+  draft determine action Prepare
+  {
+    validation validateCustomer;
+    validation validateDates;
+  }
+
+  action deductDiscount parameter /dmo/a_travel_discount result [1] $self;
+  factory action copyTravel [1];
+
+  action ( features : instance ) acceptTravel result [1] $self;
+  action ( features : instance ) rejectTravel result [1] $self;
+
+  internal action recalcTotalPrice;
+  determination calculateTotalPrice on modify { create; field BookingFee, CurrencyCode; }
+
+  mapping for zrap100_travel_m
+    {
+      TravelId           = travel_id;
+      AgencyId           = agency_id;
+      CustomerId         = customer_id;
+      BeginDate          = begin_date;
+      EndDate            = end_date;
+      BookingFee         = booking_fee;
+      TotalPrice         = total_price;
+      CurrencyCode       = currency_code;
+      Description        = description;
+      OverallStatus      = overall_status;
+      Attachment         = attachment;
+      MimeType           = mime_type;
+      FileName           = file_name;
+      CreatedBy          = created_by;
+      CreatedAt          = created_at;
+      LocalLastChangedBy = local_last_changed_by;
+      LocalLastChangedAt = local_last_changed_at;
+      LastChangedAt      = last_changed_at;
+    }
+
+  association _Booking { create; with draft; }
+}
+
+define behavior for ZR_RAP100_BOOK_M alias Booking
+implementation in class ZBP_R_RAP100_BOOK_M unique
+persistent table zrap100_book_m
+draft table zrap100_book_d
+etag master LocalLastChangedAt
+lock dependent by _Travel
+authorization dependent by _Travel
+
+{
+  field ( readonly )
+  TravelID,
+  LocalLastChangedAt;
+
+  field ( readonly : update )
+  BookingID;
+
+  update;
+  delete;
+
+  determination calculateTotalPrice on modify { create; field FlightPrice, CurrencyCode; }
+  //Function (s)
+  function getDaysToFlight result [1] ZA_RAP100_DaysToFlight_M;
+  mapping for zrap100_book_m
+    {
+      TravelID           = TRAVEL_ID;
+      BookingID          = BOOKING_ID;
+      BookingDate        = BOOKING_DATE;
+      CustomerID         = CUSTOMER_ID;
+      CarrierID          = CARRIER_ID;
+      ConnectionID       = CONNECTION_ID;
+      FlightDate         = FLIGHT_DATE;
+      BookingStatus      = BOOKING_STATUS;
+      FlightPrice        = FLIGHT_PRICE;
+      CurrencyCode       = CURRENCY_CODE;
+      LocalLastChangedAt = LOCAL_LAST_CHANGED_AT;
+    }
+
+  association _Travel { with draft; }
+}

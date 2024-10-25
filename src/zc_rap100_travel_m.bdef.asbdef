@@ -1,0 +1,37 @@
+projection implementation in class ZBP_C_RAP100_TRAVEL_M unique;
+strict ( 2 );
+use draft;
+use side effects;
+define behavior for ZC_RAP100_TRAVEL_M alias Travel
+use etag
+
+{
+  use create;
+  use update;
+  use delete;
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+
+  use association _Booking { create; with draft; }
+
+  use action deductDiscount;
+  use action copyTravel;
+
+  use action acceptTravel;
+  use action rejectTravel;
+
+}
+
+define behavior for ZC_RAP100_BOOK_M alias Booking
+use etag
+
+{
+  use update;
+  use delete;
+
+  use association _Travel { with draft; }
+}
